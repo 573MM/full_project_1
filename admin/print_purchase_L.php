@@ -1,0 +1,242 @@
+<?php
+    $cx = mysqli_connect("localhost","root","","app");
+
+    if(isset($_GET['purchaseNo'])){
+        $purchaseNo = $_GET['purchaseNo'];
+    }else {
+        echo "No get paramitor.";
+    }
+    $custNo = $_GET['custno'];
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Confirm Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container1 {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .header_invoice th, .header_invoice td {
+            border: none;
+            background-color: transparent;
+        }
+
+        .header_invoice table {
+            width: 100%;
+        }
+
+        .header_invoice .left-col {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 20px;
+        }
+
+        .header_invoice .right-col {
+            width: 50%;
+            vertical-align: top;
+            padding-left: 20px;
+        }
+
+        .header_invoice .address {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .total-row td:last-child {
+            font-weight: bold;
+        }
+        .button_con {
+            display: flex;
+            justify-content: center;
+        }
+        .button_con {
+            text-align: center; /* จัดให้เนื้อหาอยู่ตรงกลาง */
+            margin-top: 20px; /* ขอบด้านบน */
+        }
+
+        .button_con a {
+            text-decoration: none; /* ลบ underline ของลิงค์ */
+        }
+
+        .button_con button {
+            padding: 10px 20px; /* ปรับขนาดของปุ่ม */
+            margin: 0 10px; /* ระยะห่างระหว่างปุ่ม */
+            border: none; /* ลบเส้นขอบของปุ่ม */
+            border-radius: 5px; /* ทำให้มีเส้นขอบเวียนมน */
+            background-color: #4CAF50; /* สีพื้นหลังของปุ่ม */
+            color: white; /* สีของตัวอักษรภายในปุ่ม */
+            font-size: 16px; /* ขนาดตัวอักษร */
+            cursor: pointer; /* ทำให้เป็นเคอร์เซอร์เมื่อชี้ */
+            transition: background-color 0.3s; /* เพื่อทำให้เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
+        }
+
+        .button_con button:hover {
+            background-color: #45a049; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <?php include 'navbarL.html';?>
+        <div class='body_container'>
+    <?php
+
+    $sql_customer = "SELECT CustNo , CustName , Sex,`Address`,Tel FROM customer WHERE CustNo = '$custNo'"; 
+
+    $sql_purchase = "SELECT
+    o.PurchaseNo,
+    o.OrderNo,
+    o.ProductQty,
+    o.ProductNo,
+    p.ProductName,
+    p.PricePerUnit,
+    ph.Status,
+    ph.Date
+    FROM orders AS o
+    INNER JOIN purchase AS ph ON o.PurchaseNo = ph.PurchaseNo
+    INNER JOIN product AS p ON o.ProductNo = p.ProductNo
+    WHERE o.PurchaseNo = '$purchaseNo'";
+
+
+    $result_purchase = mysqli_query($cx, $sql_purchase);
+    $result_customer = mysqli_query($cx, $sql_customer);
+
+?>
+    <div class="container1">
+        <h1>ใบสั่งซื้อสินค้า</h1>
+        <?php
+            // Fetch and display customer details
+            if ($result_customer && mysqli_num_rows($result_customer) > 0) {
+                $row = mysqli_fetch_assoc($result_customer);
+        ?>
+        <div class="header_invoice">
+            <table>
+                <tr>
+                    <td class="left-col">
+                        <h2>ร้านค้าผู้ให้บริการ</h2>
+                        <div class="address">
+                            <p>บริษัท โอทอปออนไลน์ จำกัด</p>
+                            <p>1 ซอย ฉลองกรุง 1 แขวงลาดกระบัง เขตลาดกระบัง กรุงเทพมหานคร 10520</p>
+                            <p>เลขประจำตัวผู้เสียภาษีอากร 1212312121</p>
+                            <p>ติดต่อ 0922577784</p>
+                        </div>
+                    </td>
+                    <td class="right-col">
+                        <h2>รายละเอียดลูกค้า</h2>
+                        <div class="address">
+                            <p>ชื่อลูกค้า: <?php echo $row['CustName']; ?></p>
+                            <p>หมายเลขโทรศัพท์: <?php echo $row['Tel']; ?></p>
+                            <p>ที่อยู่: <?php echo $row['Address']; ?></p>
+                    
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <?php
+            } else {
+                echo "<p>Customer not found.</p>";
+            }
+        ?>
+        <table>
+            <tr>
+                <th>รหัสสินค้า</th>
+                <th>ชื่อสินค้า</th>
+                <th>ราคาต่อหน่วย</th>
+                <th>จำนวน</th>
+                <th>รวม</th>
+            </tr>
+            <?php
+                $sum = 0;
+                while ($row = mysqli_fetch_assoc($result_purchase)) {
+                    $date = $row['Date'];
+                    $status = $row['Status'];
+                    $productNo = $row['ProductNo'];
+                    $qty = $row['ProductQty'];
+                    $price = $row['PricePerUnit'];
+                    $result = $qty * $price;
+                    $sum += $result;
+            ?>
+            <tr>
+                <td><?php echo $productNo; ?></td>
+                <td><?php echo $row['ProductName']; ?></td>
+                <td><?php echo $price; ?></td>
+                <td><?php echo $qty; ?></td>
+                <td><?php echo $result; ?></td>
+            </tr>
+            <?php
+                }
+                mysqli_close($cx);
+            ?>
+            <tr class="total-row">
+                <td colspan="4">รวมทั้งสิ้น</td>
+                <td><?php echo $sum; ?></td>
+            </tr>
+        </table>
+        <br></br>
+        <?php
+            echo "<p>วันที่สั่งซื้อ <span style='color: red;'>$date</span></p>";
+        ?>
+
+
+        <p>สถานะใบสั่งซื้อ <?php echo $status; ?></p>
+        
+
+    </div>
+            
+    <div class="button_con">
+        <a href="purchasepdf.php?purchaseNo=<?php echo $purchaseNo; ?>&custno=<?php echo $custNo; ?>">
+            <button>พิมพ์ใบสั่งซื้อ</button>
+        </a>
+        <?php if ($status != 'Pending' && $status != 'Complete'): ?>
+            <form action="updateStatusPurchase.php" method="post">
+                <input type="hidden" name="purchaseNo" value="<?php echo $purchaseNo; ?>">
+                <input type="hidden" name="custno" value="<?php echo $custNo; ?>">
+                <input type="hidden" name="status" value="Complete">
+                <button type="submit">จัดส่งแล้ว</button>
+            </form>
+        <?php endif; ?>
+
+    </div>
+    </div>
+    </div>
+</body>
+</html>
+
